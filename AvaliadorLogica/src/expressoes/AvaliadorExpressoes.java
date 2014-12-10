@@ -344,6 +344,193 @@ public class AvaliadorExpressoes {
 			
 	}
 	
+	//tests the expression
+	//if it's well formed, the boolean will return true
+	//if not, false
+	public boolean expressaoBF (String expressao) {
+		
+		boolean ebf = false;
+		
+		//base: regex for atoms
+		if(expressao.matches("[xyz]")) {
+
+			ebf = true;
+			
+		} else {
+		
+			//case 1: regex for (-atom)
+			if(expressao.matches("[\\(][-][xyz][\\)]")) {
+				
+				ebf = true;
+				
+				String temp = expressao.substring(2, 3);
+				
+				boolean ebfT = this.expressaoBF(temp);
+				
+				if(ebfT == false) {
+					
+					ebf = false;
+					return ebf;
+					
+				} else {
+					
+					ebf = true;
+					
+				}
+
+			//case 2: regex for (-(subexpression))
+			} else if(expressao.matches("[\\(][-][\\(].*[\\)][\\)]")) {
+				
+				ebf = true;
+				
+				String temp = expressao.substring(2, expressao.length()-1);
+				
+				boolean ebfT = this.expressaoBF(temp);
+				
+				if(ebfT == false) {
+					
+					ebf = false;
+					return ebf;
+					
+				} else {
+					
+					ebf = true;
+					
+				}
+
+			//case 3: regex for (atom symbol atom)
+			} else if(expressao.matches("[\\(][xyz][^xyz01][xyz][\\)]")) {
+				
+				ebf = true;
+
+				String sub1 = expressao.substring(1,2);
+				String sub2 = expressao.substring(3,4);
+				
+				boolean ebfT1 = this.expressaoBF(sub1);
+				boolean ebfT2 = this.expressaoBF(sub2);
+				
+				if((ebfT1 || ebfT2) == false) {
+					
+					ebf = false;
+					return ebf;
+					
+				} else {
+					
+					ebf = true;
+					
+				}
+			
+			//case 4: regex for (atom symbol (subexpression))
+			} else if(expressao.matches("[\\(][xyz][^xyz01][\\(].*[\\)][\\)]")) {
+				
+				ebf = true;
+				
+				String regex = "[\\(][xyz][^xyz01][\\(]";
+				Pattern pattern = Pattern.compile(regex);
+				Matcher matcher = pattern.matcher(expressao);
+				
+				int trim = 0;
+				
+				if(matcher.find()) {
+					
+					trim = matcher.end();
+					
+				}
+				
+				String sub1 = expressao.substring(1,2);
+				String sub2 = expressao.substring(trim-1,expressao.length()-1);
+				
+				boolean ebfT1 = this.expressaoBF(sub1);
+				boolean ebfT2 = this.expressaoBF(sub2);
+				
+				if((ebfT1 || ebfT2) == false) {
+					
+					ebf = false;
+					return ebf;
+					
+				} else {
+					
+					ebf = true;
+					
+				}
+			
+			//case 5: regex for ((subexpression) symbol atom)
+			} else if (expressao.matches("[\\(][\\(].*[\\)][^xyz01][xyz][\\)]")) {
+				
+				ebf = true;
+				
+				String regex = "[\\(][\\(].*[\\)][^xyz01]";
+				Pattern pattern = Pattern.compile(regex);
+				Matcher matcher = pattern.matcher(expressao);
+				
+				int trim = 0;
+				
+				if(matcher.find()) {
+
+					trim = matcher.end();
+					
+				}
+				
+				String sub1 = expressao.substring(1,trim-1);
+				String sub2 = expressao.substring(trim,expressao.length()-1);
+				
+				boolean ebfT1 = this.expressaoBF(sub1);
+				boolean ebfT2 = this.expressaoBF(sub2);
+				
+				if((ebfT1 || ebfT2) == false) {
+					
+					ebf = false;
+					return ebf;
+					
+				} else {
+					
+					ebf = true;
+					
+				}
+			
+			//case 6: regex for ((subexpression) symbol (subexpression))
+			} else if (expressao.matches("[\\(][\\(].*[\\)][^xyz01][\\(].*[\\)][\\)]")) {
+				
+				ebf = true;
+				
+				String regex = "[\\(][\\(].*[\\)][^xyz01][\\(]";
+				Pattern pattern = Pattern.compile(regex);
+				Matcher matcher = pattern.matcher(expressao);
+				
+				int trim = 0;
+				
+				if(matcher.find()) {
+					
+					trim = matcher.end();
+					
+				}
+				
+				String sub1 = expressao.substring(1, trim-2);
+				String sub2 = expressao.substring(trim-1, expressao.length()-1);
+				
+				boolean ebfT1 = this.expressaoBF(sub1);
+				boolean ebfT2 = this.expressaoBF(sub2);
+				
+				if((ebfT1 || ebfT2) == false) {
+					
+					ebf = false;
+					return ebf;
+					
+				} else {
+					
+					ebf = true;
+					
+				}
+				
+			}
+		
+		}
+		
+		return ebf;
+		
+	}
+	
+	//[Incomplete Method]
 	//when calling this method for the first time, since we want the truth values, int valor = 1;
 	//the array of ints have the values for x,y,z in this order
 	//don't use the first position of the tabela list
