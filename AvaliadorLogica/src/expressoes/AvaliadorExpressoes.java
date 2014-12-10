@@ -1,5 +1,7 @@
 package expressoes;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -340,6 +342,162 @@ public class AvaliadorExpressoes {
 		
 		return quantidadeSubs;
 			
+	}
+	
+	//when calling this method for the first time, since we want the truth values, int valor = 1;
+	//the array of ints have the values for x,y,z in this order
+	//don't use the first position of the tabela list
+	public List<String> valorVerdade(String expressao, List<String> tabela, int numeroOperadores, List<String> operadores, int valor) {
+		
+		List<String> variaveis  = new ArrayList<String>();
+		
+		//each position of this array will have the starting e ending indexes of the truth tables for each operator
+		//I'm eliminating the first position of the array
+		int[] indexes = new int[numeroOperadores*2];
+		
+		//pointer to the position at the truth table
+		int track = 1;
+
+		//calculating the indexes for the truth table from the number of operators and the arraylist operadores
+		for (int i = 0; i < numeroOperadores; i++) {
+		
+			//for unary operators
+			if(operadores.get(i).equals("-1")) {
+				
+				int j = 0;
+				
+				while((indexes[j] != 0) || (indexes.length < numeroOperadores*2)) {					
+					j++;	
+				}
+
+				indexes[j] = track;
+				indexes[j+1] = track+3;
+				track = track+4;
+			
+			//for binary
+			} else {
+				
+				int k = 0;
+				
+				while((indexes[k] != 0) || (indexes.length < numeroOperadores*2)) {					
+					k++;	
+				}
+				
+				indexes[k] = track;
+				indexes[k+1] = track+11;
+				track = track+12;
+
+			}
+			
+		}
+		
+		System.out.println(indexes[0]);
+		System.out.println(indexes[1]);
+		System.out.println(indexes[2]);
+		System.out.println(indexes[3]);
+	
+		//base: regex for atoms
+		if(expressao.matches("[xyz]")) {
+			
+			String temp = expressao + "=" + valor;
+			
+			variaveis.add(temp);
+			
+		} else {
+			
+			//case 1: regex for (-atom)
+			if(expressao.matches("[\\(][-][xyz][\\)]")) {
+				
+				if(valor == 1) {
+					
+					valor = 0;
+					String temp = expressao.substring(2,3);
+					
+					variaveis = this.valorVerdade(temp, tabela, numeroOperadores, operadores, valor);
+	
+				} else {
+					
+					valor = 1;
+					String temp = expressao.substring(2,3);
+					
+					variaveis = this.valorVerdade(temp, tabela, numeroOperadores, operadores, valor);
+					
+				}
+				
+			//case 2: regex for (-(subexpression))
+			} else if(expressao.matches("[\\(][-][\\(].*[\\)][\\)]")) {
+				
+				if(valor == 1) {
+					
+					valor = 0;
+					String temp = expressao.substring(2, expressao.length()-1);
+					
+					variaveis = this.valorVerdade(temp, tabela, numeroOperadores, operadores, valor);
+					
+				} else {
+					
+					valor = 0;
+					String temp = expressao.substring(2, expressao.length()-1);
+					
+					variaveis = this.valorVerdade(temp, tabela, numeroOperadores, operadores, valor);
+					
+				}
+			
+			//case 3: regex for (atom symbol atom)
+			} else if(expressao.matches("[\\(][xyz][^xyz01][xyz][\\)]")) {
+				
+				String regex = "[xyz][^xyz01][xyz]";
+				Pattern pattern = Pattern.compile(regex);
+				Matcher matcher = pattern.matcher(expressao);
+				
+				int trim = 0;
+				
+				if(matcher.find()) {
+					
+					trim = matcher.end();
+					
+				}
+				
+				System.out.println(trim);
+				int pSymbol = trim-1;
+				String tempSymbol = expressao.charAt(pSymbol) + "2";
+				int positionOperator = 0;
+				
+				for(int n = 0; n<numeroOperadores; n++) {
+					
+					if(operadores.get(n).equals(tempSymbol)) {
+						
+						positionOperator = n;
+						
+					}
+					
+				}
+
+				
+				if(valor == 1) {
+					
+					tabela.get(indexes[positionOperator*2]);
+					
+					//if( tabela.get(indexes[positionOperator*2]+2) || ) 
+
+					
+				} else {
+					
+					
+					
+				}
+				
+				String temp1 = expressao.substring(1,2);
+				String temp2 = expressao.substring(3,4);
+				
+				
+				
+			}
+
+		}
+
+		return variaveis;
+	
 	}
 
 }
