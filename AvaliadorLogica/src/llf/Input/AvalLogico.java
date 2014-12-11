@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import expressoes.AvaliadorExpressoes;
 public class AvalLogico {
 
 	public static void main(String[] args) {		
@@ -18,13 +19,50 @@ public class AvalLogico {
 		
 		try {			
 			
-			Object[] ex = lerArquivo();
-			System.out.println(ex[1]);
+			List<String> ex = lerArquivo();
 			
-			String[] test = new String[2];
-			test[0] = "You're dumb";
+			List<String> termos = new ArrayList<String>();
+			int pos = 0;
 			
-			fecharArquivo(test);
+			for(int i = 0; i < ex.size(); i++){
+				if(ex.get(i).matches("\\d\\s\\d")){
+					pos = i;
+					
+				}else if(ex.get(i).matches("\\d\\s\\d\\s\\d")){
+					pos = i;
+				}
+			}
+			
+			for(int i = pos+2; i < ex.size(); i++){
+				termos.add(ex.get(i));
+			}
+			
+			System.out.print(termos.get(0));
+			
+			boolean loop = true;
+			int looper = 0;
+			AvaliadorExpressoes aval = new AvaliadorExpressoes(); 
+			while(loop){
+				
+				if(aval.expressaoBF(termos.get(looper))){
+					fecharArquivo("Expressão " + looper + ": bem formada");
+					
+					int altura = aval.alturaArvore(termos.get(looper));
+					fecharArquivo("Expressão tem altura: " + altura );
+					
+					int subs = aval.quantidadeSubexpressoes(termos.get(looper));
+					fecharArquivo("Expressão tem: " + subs + " subesxpressoes" );
+					
+				}else {
+					fecharArquivo("Expressão " + looper + ": mal formada");
+				}
+				
+				looper++;
+				
+				if(looper == termos.size()){
+					loop = false;
+				}
+			}
 			
 			
 		} catch (Exception e){
@@ -36,7 +74,7 @@ public class AvalLogico {
 	
 	
 	//Leitura do Arquivo
-	public static Object[] lerArquivo() throws IOException{
+	public static List lerArquivo() throws IOException{
 		
 		//Seta o tipo de chars
 		Charset ct = Charset.forName("utf-8");
@@ -51,20 +89,18 @@ public class AvalLogico {
 		}
 		
 		//Retorna um array com todas as expressoes
-		return ex.toArray();
+		return ex;
 		
 	}
 	
 	//Escreve mudanças para o arquivo
-	public static void fecharArquivo(String[] ex) throws IOException{
+	public static void fecharArquivo(String ex) throws IOException{
 		
 		//Inicializa novo objeto que registra no arquivo especificado
 		Writer autor = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("Expressao.out"), "utf-8"));
 		
-		//Um for para pegar todos os itens do array
-		for(int i = 0; i< ex.length; i++){
-			autor.write((String) ex[i] + "\n");
-		}
+		autor.write((String) ex + "\n");
+	
 		
 		//fecha o objeto
 		autor.close();
